@@ -23,14 +23,19 @@ describe('test start step1:', function() {
   var keys = [];
 
   after(function(done) {
-    entries = [];
-    for (i in keys) {
+    var entries = [];
+    for (var i in keys) {
       entries.push(new qiniu.rs.EntryPath(TEST_BUCKET, keys[i]));
     }
 
     var client = new qiniu.rs.Client();
     client.batchDelete(entries, function(err, ret) {
-      err.should.eql({});
+      should.not.exist(err);
+      should.exist(ret);
+      ret.length.should.equal(entries.length);
+      ret.forEach(function (result) {
+        result.should.eql({code: 200});
+      });
       done();
     });
   });
@@ -48,9 +53,10 @@ describe('test start step1:', function() {
         it('test upload from memory', function(done) {
           var key = 'filename' + Math.random(1000);
           qiniu.io.put(uptoken, key, 'content', null, function(err, ret) {
-            err.should.eql({});
+            should.not.exist(err);
             ret.should.have.keys('hash', 'key');
             ret.key.should.equal(key);
+            ret.hash.should.be.a('string');
             keys.push(ret.key);
             done();
           });
@@ -61,7 +67,7 @@ describe('test start step1:', function() {
         it('test upload from memory without key', function(done) {
           var content = 'content' + Math.random(1000);
           qiniu.io.putWithoutKey(uptoken, content, null, function(err, ret) {
-            err.should.eql({});
+            should.not.exist(err);
             ret.should.have.keys('hash', 'key');
             ret.key.should.equal(ret.hash);
             keys.push(ret.key);
@@ -74,7 +80,7 @@ describe('test start step1:', function() {
         it('test upload from a file', function(done) {
           var key = Math.random() + 'logo.png';
           qiniu.io.putFile(uptoken, key, imageFile, null, function(err, ret) {
-            err.should.eql({});
+            should.not.exist(err);
             ret.should.have.keys('key', 'hash');
             ret.key.should.equal(key);
             keys.push(ret.key);
@@ -87,7 +93,7 @@ describe('test start step1:', function() {
           extra.checkCrc = 1;
           var key = Math.random() + 'logo_crc32.png';
           qiniu.io.putFile(uptoken, key, imageFile, extra, function(err, ret) {
-            err.should.eql({});
+            should.not.exist(err);
             ret.should.have.keys('key', 'hash');
             ret.key.should.equal(key);
             keys.push(ret.key);
@@ -115,9 +121,9 @@ describe('test start step1:', function() {
       describe('rsf.listPrefix()', function() {
         it('list all file in test bucket', function(done) {
           qiniu.rsf.listPrefix(TEST_BUCKET, null, null, null, function(err, ret) {
-            err.should.eql({});
+            should.not.exist(err);
 //            ret.data.items.length.should.equal(keys.length);
-            for (i in ret.items) {
+            for (var i in ret.items) {
               ret.items[i].should.have.keys('key', 'putTime', 'hash', 'fsize', 'mimeType');
 //              keys.indexOf(ret.items[i].key).should.above(-1);
             }

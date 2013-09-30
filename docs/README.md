@@ -151,7 +151,7 @@ function PutPolicy(scope, callbackUrl, callbackBody, returnUrl, returnBody,
 }
 ```
 
-* `scope` 限定客户端的权限。如果 `scope` 是 bucket，则客户端只能新增文件到指定的 bucket，不能修改文件。如果 `scope` 为 bucket:key，则客户端可以修改指定的文件。
+* `scope` 限定客户端的权限。如果 `scope` 是 bucket，则客户端只能新增文件到指定的 bucket，不能修改文件。如果 `scope` 为 bucket:key，则客户端可以修改指定的文件。**注意： key必须采用utf8编码，如使用非utf8编码访问七牛云存储将反馈错误**
 * `callbackUrl` 设定业务服务器的回调地址，这样业务服务器才能感知到上传行为的发生。
 * `callbackBody` 设定业务服务器的回调信息。文件上传成功后，七牛向业务服务器的callbackUrl发送的POST请求携带的数据。支持 [魔法变量](http://docs.qiniu.com/api/put.html#MagicVariables) 和 [自定义变量](http://docs.qiniu.com/api/put.html#xVariables)。
 * `returnUrl` 设置用于浏览器端文件上传成功后，浏览器执行301跳转的URL，一般为 HTML Form 上传时使用。文件上传成功后浏览器会自动跳转到 `returnUrl?upload_ret=returnBody`。
@@ -221,7 +221,7 @@ function uploadBuf(body, key, uptoken) {
   //extra.crc32 = crc32;
   //extra.checkCrc = checkCrc;
 
-  io.put(uptoken, key, body, extra, function(err, ret) {
+  qiniu.io.put(uptoken, key, body, extra, function(err, ret) {
     if (!err) {
       // 上传成功， 处理返回值
       console.log(ret.key, ret.hash);
@@ -245,7 +245,7 @@ function uploadFile(localFile, key, uptoken) {
   //extra.crc32 = crc32;
   //extra.checkCrc = checkCrc;
 
-  io.putFile(uptoken, key, localFile, extra, function(err, ret) {
+  qiniu.io.putFile(uptoken, key, localFile, extra, function(err, ret) {
     if(!err) {
       // 上传成功， 处理返回值
       console.log(ret.key, ret.hash);
@@ -273,6 +273,8 @@ function uploadFile(localFile, key, uptoken) {
 
 假设某个 bucket 既绑定了七牛的二级域名，如 hello.qiniudn.com，也绑定了自定义域名（需要备案），如 hello.com。那么该 bucket 中 key 为 a/b/c.htm 的文件可以通过 http://hello.qiniudn.com/a/b/c.htm 或 http://hello.com/a/b/c.htm 中任意一个 url 进行访问。
 
+**注意： key必须采用utf8编码，如使用非utf8编码访问七牛云存储将反馈错误**
+
 <a name="io-get-private"></a>
 
 ##### 下载私有文件
@@ -285,8 +287,8 @@ function uploadFile(localFile, key, uptoken) {
 
 ```{javascript}
 function downloadUrl(domain, key) {
-  var baseUrl = rs.makeBaseUrl(domain, key);
-  var policy = new rs.GetPolicy();
+  var baseUrl = qiniu.rs.makeBaseUrl(domain, key);
+  var policy = new qiniu.rs.GetPolicy();
   return policy.makeRequest(baseUrl);
 }
 ```
